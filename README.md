@@ -4,6 +4,7 @@ A mixin for creating application consoles with Readline support.
 
 ## Example
 
+    ```ruby
     gem install consolize
 
     require "consolize"
@@ -54,6 +55,7 @@ A mixin for creating application consoles with Readline support.
     end
 
     UsefulThing.new.console
+    ```
 
 
 ## Usage
