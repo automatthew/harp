@@ -117,7 +117,7 @@ module Harp
       @completions = context.completions rescue Set.new
       @run = true
       puts
-      while @run && line = Readline.readline("¶> ", true)
+      while @run && line = Readline.readline("<3: ", true)
         self.parse(context, line.chomp)
       end
     end
