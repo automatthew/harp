@@ -1,13 +1,13 @@
-# Consolize
+# HARP
 
-A mixin for creating application consoles with Readline support.
+A mixin for creating application REPLs with Readline support.
 
 ## Example
 
-```ruby
-gem install consolize
+    gem install harp
 
-require "consolize"
+```ruby
+require "harp"
 
 class UsefulThing
 
@@ -17,18 +17,18 @@ class UsefulThing
   end
 
   # Mix it in
-  include Consolize
+  include Harp
 
   # Set it up
-  setup_console do |console|
+  setup_repl do |repl|
 
     on("help") do
-      commands = console.commands
+      commands = repl.commands
       puts "* Available commands: " << commands.sort.join(" ")
       puts "* Tab completion works for commands."
     end
 
-    # Consolize provides a "quit" command by default, but you can
+    # Harp provides a "quit" command by default, but you can
     # override it to add value.
     on("quit") do
       puts "Farewell to the girl with the sun in her eyes."
@@ -54,7 +54,7 @@ class UsefulThing
 
 end
 
-UsefulThing.new.console
+UsefulThing.new.repl
 ```
 
 

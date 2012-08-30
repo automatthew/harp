@@ -1,14 +1,14 @@
 Gem::Specification.new do |s|
-  s.name = "consolize"
-  s.version = "0.2.1"
+  s.name = "harp"
+  s.version = "0.2.2"
   s.authors = ["Matthew King"]
-  s.homepage = "https://github.com/automatthew/consolize"
-  s.summary = "A mixin for creating application consoles with Readline support"
+  s.homepage = "https://github.com/automatthew/harp"
+  s.summary = "A mixin for creating simple application repls with Readline support"
 
   s.files = %w[
     README.md
     LICENSE
-    lib/consolize.rb
+    lib/harp.rb
     examples/usage.rb
   ]
   s.require_path = "lib"
