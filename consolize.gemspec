@@ -14,4 +14,5 @@ Gem::Specification.new do |s|
   s.require_path = "lib"
 
   s.add_dependency("rb-readline", "0.4.2")
+  s.add_development_dependency("starter", ">=0.1.0")
 end
