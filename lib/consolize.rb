@@ -1,9 +1,6 @@
 # stdlib
 require "set"
 
-# others
-require "rubygems"
-gem "rb-readline"
 require "readline"
 
 Readline.completion_append_character = nil
