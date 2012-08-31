@@ -1,6 +1,5 @@
 # stdlib
 require "set"
-
 require "readline"
 
 Readline.completion_append_character = nil
