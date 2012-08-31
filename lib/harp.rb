@@ -20,7 +20,7 @@ module Harp
           repl.exit
         end
         @repl.on("") do
-          puts "Giving me the silent treatment, eh?"
+          puts
         end
         @repl.instance_exec(repl, &block)
       end
