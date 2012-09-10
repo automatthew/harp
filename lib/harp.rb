@@ -5,24 +5,24 @@ require "readline"
 Readline.completion_append_character = nil
 #Readline.basic_word_break_characters = ""
 
+require "harp/dispatcher"
 
 module Harp
   def self.included(mod)
     mod.module_eval do
-      @repl = REPL.new
-      def self.repl
-        @repl
+      @dispatcher = Dispatcher.new
+
+      def self.setup_harp(&block)
+        dispatcher = @dispatcher
+        # This should either be baked in to REPL, or non-existent.
+        @dispatcher.command("quit") do
+          exit
+        end
+        @dispatcher.instance_exec(dispatcher, &block)
       end
 
-      def self.setup_repl(&block)
-        repl = @repl
-        @repl.on("quit") do
-          repl.exit
-        end
-        @repl.on("") do
-          puts
-        end
-        @repl.instance_exec(repl, &block)
+      def self.repl
+        REPL.new(@dispatcher)
       end
 
       def repl
@@ -34,9 +34,9 @@ module Harp
   class REPL
 
     attr_reader :store, :commands
-    def initialize
-      @patterns = {}
-      @commands = Set.new
+    def initialize(dispatcher)
+      @dispatcher = dispatcher
+      @commands = dispatcher.commands.keys
       Readline.completion_proc = self.method(:complete)
     end
 
@@ -45,29 +45,27 @@ module Harp
       when /^\s*!/
         # if we're in the middle of a bang-exec command, completion
         # should look at the file system.
-        self.dir_complete(str)
+        self.complete_path(str)
       else
         # otherwise use the internal dict.
-        self.term_complete(str)
+        self.complete_term(str)
       end
     end
 
-    def dir_complete(str)
+    def complete_path(str)
       Dir.glob("#{str}*")
     end
 
-    def term_complete(str)
+    def complete_term(str)
       # Terms can be either commands or indexes into the configuration
       # data structure.  No command contains a ".", so that's the test
       # we use to distinguish.
       bits = str.split(".")
       if bits.size > 1
-        # Somebody should have documented this when he wrote it, because
-        # he now does not remember exactly what he was trying to achieve.
-        # He thinks that it's an attempt to allow completion of either
-        # full configuration index strings, or of component parts.
-        # E.g., if the configuration contains foo.bar.baz, this code
-        # will offer both "foo" and "foo.bar.baz" as completions for "fo".
+        # An attempt to allow completion of either full configuration index
+        # strings, or of component parts.  E.g., if the configuration contains
+        # foo.bar.baz, this code will offer both "foo" and "foo.bar.baz"
+        # as completions for "fo".
         v1 = @completions.grep(/^#{Regexp.escape(str)}/)
         v2 = @completions.grep(/^#{Regexp.escape(bits.last)}/)
         (v1 + v2.map {|x| (bits.slice(0..-2) << x).join(".") }).uniq
@@ -87,63 +85,32 @@ module Harp
       str.gsub(/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]/, "")
     end
 
-    def on(*pattern, &block)
-      pattern.flatten.each do |pattern|
-        @patterns[pattern] = block
-        self.add_command(pattern)
-      end
-    end
-
-    # Helper for defining the action for the "!" command.
-    # Typically used to shell out, a la Vim.
-    def on_bang(&block)
-      on(/^\!\s*(.*)$/, &block)
-    end
-
-    def add_command(pattern)
-      if pattern.is_a?(String)
-        @commands << pattern
-      else
-        bits = pattern.source.split(" ")
-        # TODO: figure out why you did this, then document it.
-        if bits.size > 1
-          @commands << bits.first
-        end
-      end
-    end
-
     def run(context)
       @completions = context.completions rescue Set.new
       @run = true
       puts
-      while @run && line = Readline.readline("<3: ", true)
-        self.parse(context, line.chomp)
-      end
-    end
-
-    def exit
-      @run = false
-    end
-
-    # Attempt to find a registered command that matches the input
-    # string.  Upon failure, print an encouraging message.
-    def parse(context, input_string)
-      _p, block= @patterns.detect do |pattern, block|
-        pattern === input_string
-      end
-      if block
-        # Perlish global ugliness necessitated by the use of
-        # Enumerable#detect above.  FIXME.
-        if $1
-          # if the regex had a group (based on the assumption that $1
-          # represents the result of the === that matched), call the block
-          # with all the group matches as arguments.
-          context.instance_exec($~[1..-1], &block)
-        else
-          context.instance_eval(&block)
+      while @run && (line = Readline.readline("<3: ", true).strip)
+        if line[0] == "!"
+          system(line.slice(1..-1))
+          next
         end
-      else
-        puts "command not found"
+
+        if line.empty?
+          next
+        end
+
+        name, *args = line.split(/\s+/)
+
+        # TODO: check for bang command
+        if command = @dispatcher.commands[name]
+          if block = command.block_for(args)
+            context.instance_exec(args, &block)
+          else
+            puts "invalid arguments for command"
+          end
+        else
+          puts "command not found"
+        end
       end
     end
 

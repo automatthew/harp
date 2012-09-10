@@ -11,33 +11,33 @@ class UsefulThing
   include Harp
 
   # Set it up
-  setup_repl do |repl|
+  setup_harp do |harp|
 
-    on("help") do
-      commands = repl.commands
+    command("help") do
+      commands = harp.command_names
       puts "* Available commands: " << commands.sort.join(" ")
       puts "* Tab completion works for commands."
     end
 
     # Harp provides a "quit" command by default, but you can
     # override it to add value.
-    on("quit") do
+    command("quit") do
       puts "Farewell to the girl with the sun in her eyes."
       exit
     end
 
-    # Set up a handler for a command where the first token is "!"
-    # I.e., shell out like Vim does.
-    on_bang do |args|
-      system args.first
-    end
+    ## Set up a handler for a command where the first token is "!"
+    ## I.e., shell out like Vim does.
+    #on_bang do |args|
+      #system args.first
+    #end
 
     # define a command that calls an instance method of your class.
     # The block parameter is always an array, even if your regex
     # had only one match group.
     # This command will only accept a single-word argument (no
     # whitespace allowed).
-    on(/use (\S+)$/) do |args|
+    command("use", :adverb) do |args|
       self.use(args.first)
     end
 
