@@ -1,15 +1,31 @@
 module Harp
 
-  class Dispatcher
+  class CommandManager
 
     attr_reader :commands
     def initialize
       @commands = {}
     end
 
+    def handle(name, args, context)
+      block = find_command(name, args)
+      context.instance_exec(args, &block)
+    end
+
+    def find_command(name, args)
+      if command = @commands[name]
+        if block = command.block_for(args)
+          return block
+        else
+          raise ArgumentError, "Invalid arguments for command."
+        end
+      else
+        raise ArgumentError, "Command not found: '#{name}'."
+      end
+    end
+
     def command(command_name, *spec, &block)
       names = [command_name]
-      #TODO aliases
       if spec.last.is_a?(Hash)
         options = spec.pop
         if command_alias = options[:alias]
@@ -25,12 +41,6 @@ module Harp
     def command_names
       @commands.keys.sort
     end
-
-    ## Helper for defining the action for the "!" command.
-    ## Typically used to shell out, a la Vim.
-    #def on_bang(&block)
-      #on(/^\!\s*(.*)$/, &block)
-    #end
 
   end
 

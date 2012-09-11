@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+require_relative "./usage"
+
+thing = UsefulThing.new
+
+if ARGV.empty?
+  thing.repl
+else
+  thing.cli
+end

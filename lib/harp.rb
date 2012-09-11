@@ -1,119 +1,37 @@
-# stdlib
-require "set"
-require "readline"
-
-Readline.completion_append_character = nil
-#Readline.basic_word_break_characters = ""
-
-require "harp/dispatcher"
+require "harp/command_manager"
+require "harp/repl"
+require "harp/cli"
 
 module Harp
   def self.included(mod)
     mod.module_eval do
-      @dispatcher = Dispatcher.new
+      @command_manager = CommandManager.new
 
       def self.setup_harp(&block)
-        dispatcher = @dispatcher
+        command_manager = @command_manager
         # This should either be baked in to REPL, or non-existent.
-        @dispatcher.command("quit") do
+        @command_manager.command("quit") do
           exit
         end
-        @dispatcher.instance_exec(dispatcher, &block)
+        @command_manager.instance_exec(command_manager, &block)
       end
 
       def self.repl
-        REPL.new(@dispatcher)
+        REPL.new(@command_manager)
       end
 
       def repl
         self.class.repl.run(self)
       end
-    end
-  end
 
-  class REPL
+      def self.cli
+        CLI.new(@command_manager)
+      end
 
-    attr_reader :store, :commands
-    def initialize(dispatcher)
-      @dispatcher = dispatcher
-      @commands = dispatcher.commands.keys
-      Readline.completion_proc = self.method(:complete)
-    end
-
-    def complete(str)
-      case Readline.line_buffer
-      when /^\s*!/
-        # if we're in the middle of a bang-exec command, completion
-        # should look at the file system.
-        self.complete_path(str)
-      else
-        # otherwise use the internal dict.
-        self.complete_term(str)
+      def cli
+        self.class.cli.run(self)
       end
     end
-
-    def complete_path(str)
-      Dir.glob("#{str}*")
-    end
-
-    def complete_term(str)
-      # Terms can be either commands or indexes into the configuration
-      # data structure.  No command contains a ".", so that's the test
-      # we use to distinguish.
-      bits = str.split(".")
-      if bits.size > 1
-        # An attempt to allow completion of either full configuration index
-        # strings, or of component parts.  E.g., if the configuration contains
-        # foo.bar.baz, this code will offer both "foo" and "foo.bar.baz"
-        # as completions for "fo".
-        v1 = @completions.grep(/^#{Regexp.escape(str)}/)
-        v2 = @completions.grep(/^#{Regexp.escape(bits.last)}/)
-        (v1 + v2.map {|x| (bits.slice(0..-2) << x).join(".") }).uniq
-      else
-        self.command_complete(str) +
-          @completions.grep(/^#{Regexp.escape(str)}/)
-      end
-    end
-
-    def command_complete(str)
-      @commands.grep(/^#{Regexp.escape(str)}/) 
-    end
-
-    def sanitize(str)
-      # ANSI code stripper regex cargo culted from
-      # http://www.commandlinefu.com/commands/view/3584/remove-color-codes-special-characters-with-sed
-      str.gsub(/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]/, "")
-    end
-
-    def run(context)
-      @completions = context.completions rescue Set.new
-      @run = true
-      puts
-      while @run && (line = Readline.readline("<3: ", true).strip)
-        if line[0] == "!"
-          system(line.slice(1..-1))
-          next
-        end
-
-        if line.empty?
-          next
-        end
-
-        name, *args = line.split(/\s+/)
-
-        # TODO: check for bang command
-        if command = @dispatcher.commands[name]
-          if block = command.block_for(args)
-            context.instance_exec(args, &block)
-          else
-            puts "invalid arguments for command"
-          end
-        else
-          puts "command not found"
-        end
-      end
-    end
-
   end
 
 end

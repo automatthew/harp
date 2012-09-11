@@ -1,3 +1,4 @@
+$:.unshift "#{File.expand_path(File.dirname(__FILE__))}/../lib"
 require "harp"
 
 class UsefulThing
@@ -12,10 +13,10 @@ class UsefulThing
 
   # Set it up
   setup_harp do |harp|
+    command_names = harp.command_names.select {|name| name.size > 1 }
 
     command("help", :alias => "h") do
-      commands = harp.command_names
-      puts "* Available commands: " << commands.sort.join(" ")
+      puts "* Available commands: " << command_names.sort.join(", ")
       puts "* Tab completion works for commands."
     end
 
@@ -39,5 +40,5 @@ class UsefulThing
 
 end
 
-UsefulThing.new.repl
+#UsefulThing.new.repl
 
