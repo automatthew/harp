@@ -7,10 +7,19 @@ module Harp
       @commands = {}
     end
 
-    def command(name, *spec, &block)
+    def command(command_name, *spec, &block)
+      names = [command_name]
       #TODO aliases
-      command = @commands[name] ||= Command.new(name)
-      command.add_spec(spec, block)
+      if spec.last.is_a?(Hash)
+        options = spec.pop
+        if command_alias = options[:alias]
+          names << command_alias
+        end
+      end
+      names.each do |name|
+        command = @commands[name] ||= Command.new(name)
+        command.add_spec(spec, block)
+      end
     end
 
     def command_names

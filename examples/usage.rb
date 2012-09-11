@@ -13,15 +13,15 @@ class UsefulThing
   # Set it up
   setup_harp do |harp|
 
-    command("help") do
+    command("help", :alias => "h") do
       commands = harp.command_names
       puts "* Available commands: " << commands.sort.join(" ")
       puts "* Tab completion works for commands."
     end
 
-    # Harp provides a "quit" command by default, but you can
+    # Harp's repl provides a "quit" command by default, but you can
     # override it to add value.
-    command("quit") do
+    command("quit", :alias => "q") do
       puts "Farewell to the girl with the sun in her eyes."
       exit
     end
@@ -37,7 +37,7 @@ class UsefulThing
     # had only one match group.
     # This command will only accept a single-word argument (no
     # whitespace allowed).
-    command("use", :adverb) do |args|
+    command("use", :adverb, :alias => "abuse") do |args|
       self.use(args.first)
     end
 
