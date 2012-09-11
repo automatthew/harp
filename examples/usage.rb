@@ -26,12 +26,6 @@ class UsefulThing
       exit
     end
 
-    ## Set up a handler for a command where the first token is "!"
-    ## I.e., shell out like Vim does.
-    #on_bang do |args|
-      #system args.first
-    #end
-
     # define a command that calls an instance method of your class.
     # The block parameter is always an array, even if your regex
     # had only one match group.
