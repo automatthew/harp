@@ -8,6 +8,7 @@ Readline.completion_append_character = nil
 module Harp
 
   class REPL
+    Prompt = "<3: "
 
     def initialize(command_manager)
       @command_manager = command_manager
@@ -67,7 +68,9 @@ module Harp
       @completions = context.completions rescue Set.new
       @run = true
       puts
-      while @run && (line = Readline.readline("<3: ", true).strip)
+      stty_save = `stty -g`.chomp
+      trap("INT") { system "stty", stty_save; exit }
+      while @run && (line = Readline.readline(Prompt, true).strip)
         # Treat ! as the shell out command
         if line[0] == "!"
           system(line.slice(1..-1))
