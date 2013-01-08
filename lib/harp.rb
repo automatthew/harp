@@ -16,12 +16,12 @@ module Harp
         @command_manager.instance_exec(command_manager, &block)
       end
 
-      def self.repl
-        REPL.new(@command_manager)
+      def self.repl(options={})
+        REPL.new(@command_manager, options)
       end
 
-      def repl
-        self.class.repl.run(self)
+      def repl(options={})
+        self.class.repl(options).run(self)
       end
 
       def self.cli

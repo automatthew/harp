@@ -4,7 +4,7 @@ require_relative "./usage"
 thing = UsefulThing.new
 
 if ARGV.empty?
-  thing.repl
+  thing.repl(:history_file => "repl_history", :history_limit => 10)
 else
   thing.cli
 end

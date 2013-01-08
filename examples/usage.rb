@@ -13,9 +13,9 @@ class UsefulThing
 
   # Set it up
   setup_harp do |harp|
-    command_names = harp.command_names.select {|name| name.size > 1 }
 
     command("help", :alias => "h") do
+      command_names = harp.command_names.select {|name| name.size > 1 }
       puts "* Available commands: " << command_names.sort.join(", ")
       puts "* Tab completion works for commands."
     end

@@ -10,9 +10,25 @@ module Harp
   class REPL
     Prompt = "<3: "
 
-    def initialize(command_manager)
+    def initialize(command_manager, options={})
       @command_manager = command_manager
       Readline.completion_proc = self.method(:complete)
+      if options[:history_file]
+        limit = options[:history_limit] || 100
+        if File.exist?(options[:history_file])
+          string = File.read(options[:history_file])
+          string.each_line do |line|
+            Readline::HISTORY << line.chomp
+          end
+        end
+        at_exit do
+          File.open(options[:history_file], "w") do |f|
+            Readline::HISTORY.to_a.last(limit).each do |line|
+              f.puts line unless line.empty?
+            end
+          end
+        end
+      end
     end
 
     def commands
