@@ -71,6 +71,13 @@ module Harp
       stty_save = `stty -g`.chomp
       trap("INT") { system "stty", stty_save; exit }
       while @run && (line = Readline.readline(Prompt, true).strip)
+
+        # Don't fill history with immediate duplicates.
+        one, two = Readline::HISTORY.to_a.last(2)
+        if one == two
+          Readline::HISTORY.pop
+        end
+
         # Treat ! as the shell out command
         if line[0] == "!"
           system(line.slice(1..-1))
