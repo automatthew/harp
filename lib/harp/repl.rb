@@ -84,8 +84,15 @@ module Harp
       @completions = context.completions rescue Set.new
       @run = true
       puts
+
       stty_save = `stty -g`.chomp
-      trap("INT") { system "stty", stty_save; exit }
+      kill_handler = proc do
+        system("stty", stty_save)
+        exit
+      end
+      trap("INT", kill_handler)
+      trap("TERM", kill_handler)
+
       while @run && (line = Readline.readline(Prompt, true).strip)
 
         # Don't fill history with immediate duplicates.

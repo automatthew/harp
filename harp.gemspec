@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "harp"
-  s.version = "0.2.9"
+  s.version = "0.2.10"
   s.authors = ["Matthew King"]
   s.homepage = "https://github.com/automatthew/harp"
   s.summary = "A mixin for creating simple application repls with Readline support"
